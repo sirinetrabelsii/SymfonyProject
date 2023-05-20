@@ -1,12 +1,13 @@
-{% for liste in listeProduits %}
+{% for produit in listeProduits %}
 	id :
-	{{ liste.id }}
+	{{ produit.id }}
 	name :
-	{{ liste.name }}
+	{{ produit.name }}
 	category :
-	{{ liste.category }}
+	{{ produit.category }}
 	price :
-	{{liste.price}}
+	{{produit.price}}
 	image :
-	{{liste.image}}
+	{{produit.image}}
+<input type="button" value="Voir détail" onclick="location.href='{{ path('show_produit', {'id': produit.id}) }}'"/><br/>
 {% endfor %}

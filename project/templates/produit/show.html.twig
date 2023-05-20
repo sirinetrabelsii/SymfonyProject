@@ -1,0 +1,6 @@
+<h1>Détails du produit : {{ produit.name }}</h1>
+
+<h2>Avis :</h2>
+{% for review in reviews %}
+    <p>{{ review.id }}</p>
+{% endfor %}

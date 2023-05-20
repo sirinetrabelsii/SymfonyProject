@@ -1,1 +1,12 @@
-{{test}}
+{% for liste in listeProduits %}
+	id :
+	{{ liste.id }}
+	name :
+	{{ liste.name }}
+	category :
+	{{ liste.category }}
+	price :
+	{{liste.price}}
+	image :
+	{{liste.image}}
+{% endfor %}

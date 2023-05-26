@@ -1,13 +1,24 @@
 {% for produit in listeProduits %}
-	id :
-	{{ produit.id }}
+	{# id :
+	{{ produit.id }} #}
 	name :
-	{{ produit.name }}
-	category :
+	{{ produit[0].productName }}
+	{# category :
 	{{ produit.category }}
 	price :
 	{{produit.price}}
 	image :
-	{{produit.image}}
-<input type="button" value="Voir détail" onclick="location.href='{{ path('show_produit', {'id': produit.id}) }}'"/><br/>
+	{{produit.image}} #}
+{# <input type="button" value="Voir détail" onclick="location.href='{{ path('show_produit', {'id': produit.id}) }}'"/><br/> #}
 {% endfor %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="{{asset('node_modules/bootstrap/dist/css/bootstrap.css')}}" rel="stylesheet" >
+  </head>
+  <body>
+    
+ </body>
+</html>

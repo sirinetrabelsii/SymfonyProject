@@ -21,7 +21,7 @@ class ProduitController extends AbstractController
     #[Route('/produit/{id}', name: 'show_produit', methods: ['GET'])]
     public function showProduit(Produit $produit)
     {
-        dd($produit);
+        // dd($produit);
         $reviews = $produit->getReviews();
 
         return $this->render('produit/show.html.twig', [

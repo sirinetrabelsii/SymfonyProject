@@ -1,19 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ asset('node_modules/bootstrap/dist/css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{asset('node_modules/bootstrap/dist/css/bootstrap.css')}}">
     <title>Formation</title>
-</head>
-
-<body>
+  </head>
+  <body>
 
     <section class="content">
         <div class="container container-fluid">
-            </br>
-
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -39,14 +35,14 @@
                             </div>
                             <div class="row">
                                 {% for produit in listeProduits %}
-                                <div class="col-3">
+                                <div class="col-3" style="margin:35px">
                                     <div class="card" onclick="location.href='{{ path('show_produit', {'id': produit.id}) }}';" style="width: 18rem; cursor: pointer;">
-                                        <h5 class="card-header">{{ produit.name }} </h5>
+                                        <h5 class="card-header">{{ produit.name }}</h5>
                                         <img class="card-img-top" src="{{ produit.image }}" alt="Card image cap">
                                         <div class="card-body">
                                             <p class="card-text">Catégorie: {{ produit.category }}</p>
                                         </div>
-                                        <h3 class="card-footer">Prix: {{ produit.price }} </h3>
+                                        <h3 class="card-footer">Prix: {{ produit.price }}</h3>
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -55,19 +51,36 @@
                             <div class="row">
                                 <div class="col-12">
                                     <nav aria-label="Page navigation example">
-                                        <ul class="pagination">
+                                        <ul class="pagination justify-content-center">
+
                                             {% if currentPage != 1 %}
                                             <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': 1}) }}">Première page</a></li>
                                             <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': currentPage - 1}) }}">Page précédente</a></li>
                                             {% endif %}
 
-                                            {% for page in 1..totalPages %}
-                                            {% if page == currentPage %}
-                                            <li class="page-item active"><a class="page-link" href="#">{{ page }}</a></li>
-                                            {% else %}
-                                            <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': page}) }}">{{ page }}</a></li>
+                                            {% set startPage = currentPage > 3 ? currentPage - 2 : 1 %}
+                                            {% set endPage = startPage + 4 %}
+
+                                            {% if endPage > totalPages %}
+                                                {% set startPage = totalPages - 4 %}
+                                                {% set endPage = totalPages %}
                                             {% endif %}
+
+                                            {% if startPage > 1 %}
+                                            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                                            {% endif %}
+
+                                            {% for page in startPage..endPage %}
+                                                {% if page == currentPage %}
+                                                <li class="page-item active"><a class="page-link" href="#">{{ page }}</a></li>
+                                                {% else %}
+                                                <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': page}) }}">{{ page }}</a></li>
+                                                {% endif %}
                                             {% endfor %}
+
+                                            {% if endPage < totalPages %}
+                                            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                                            {% endif %}
 
                                             {% if currentPage != totalPages %}
                                             <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': currentPage + 1}) }}">Page suivante</a></li>
@@ -83,6 +96,6 @@
             </div>
         </div>
     </section>
-</body>
 
+  </body>
 </html>

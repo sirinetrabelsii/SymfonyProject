@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Produit;
+use App\Entity\Reviews;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -13,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProduitController extends AbstractController
 {
+    private $client;
 
     public function __construct(SymfonyHttpClientInterface $client)
     {
@@ -22,6 +25,37 @@ class ProduitController extends AbstractController
     #[Route('/', name: 'List_Produit')]
     public function index(Request $request, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
     {
+        $res = $this->client->request(
+            'GET',
+            'https://tech.dev.ats-digital.com/api/products?size=50'
+        );
+
+        $data = json_decode($res->getContent(), true);
+        $i = 0;
+        foreach ($data['products'] as $result) {
+            $prod = $data['products'];
+            $product = new Produit();
+            $product->setName($prod[$i]['productName']);
+            $product->setPrice($prod[$i]['price']);
+            $product->setCategory($prod[$i]['category']);
+            $product->setImage($prod[$i]['imageUrl']);
+            $entityManager->persist($product);
+            $entityManager->flush();
+
+            $j = 0;
+            foreach ($prod[$i]['reviews'] as $res) {
+                $rev = $prod[$i]['reviews'];
+                $review = new Reviews();
+                $review->setNote($rev[$j]['value']);
+                $review->setCommentaire(substr($rev[$j]['content'], 0, 255));
+                $review->setProduit($product);
+                $entityManager->persist($review);
+                $entityManager->flush();
+                $j++;
+            }
+            $i++;
+        }
+
         $search = $request->query->get('search');
         $maxPrice = $request->query->get('max_price');
 
@@ -64,10 +98,9 @@ class ProduitController extends AbstractController
     #[Route('/produit/{id}', name: 'show_produit', methods: ['GET'])]
     public function showProduit(ProduitRepository $produitRepository, $id)
     {
-        $produit = $produitRepository->find($id);
-
+        $produit = $produitRepository->findBy(['id' => $id]);
         return $this->render('produit/show.html.twig', [
-            'produit' => $produit,
+            'produit' => $produit[0]
         ]);
     }
 }

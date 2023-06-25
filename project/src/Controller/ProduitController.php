@@ -3,30 +3,25 @@
 namespace App\Controller;
 
 use App\Entity\Produit;
+use App\Entity\Reviews;
 use App\Repository\ProduitRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface as SymfonyHttpClientInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ProduitController extends AbstractController
 {
     private $client;
 
-    public function __construct(SymfonyHttpClientInterface $client) // Updated type hint
+    public function __construct(SymfonyHttpClientInterface $client) 
     {
         $this->client = $client;
     }
     #[Route('/produit', name: 'List_Produit')]
-    // public function index(ProduitRepository $prodR)
-    // {
-    //     // $test="hello world";
-    //     $ListProd = $prodR->findAll();
-    //     // dd($ListProd);
-    //     return $this->render('produit/index.html.twig', ['listeProduits' => $ListProd]);
-    // }
-    public function index(ProduitRepository $produitRepository): Response
+    public function index(ProduitRepository $produitRepository,EntityManagerInterface $entityManager): Response
     {
         $res = $this->client->request(
             'GET',
@@ -34,23 +29,46 @@ class ProduitController extends AbstractController
         );
 
         $data = json_decode($res->getContent(), true);
-      //   dd($data);
+         $i=0;
+        foreach($data['products'] as $result)
+        {
+            $prod =$data['products'];
+            $product = new Produit();
+            $product->setName($prod[$i]['productName']);
+            $product->setPrice($prod[$i]['price']);
+            $product->setCategory($prod[$i]['category']);
+            $product->setImage($prod[$i]['imageUrl']);
+            $entityManager->persist($product);
+            $entityManager->flush();
 
+                $j=0;
+                foreach($prod[$i]['reviews']as $res)
+                {
+                    $rev =$prod[$i]['reviews'];
+                    $review = new Reviews();
+                    $review->setNote($rev[$j]['value']);
+                    $review->setCommentaire(substr($rev[$j]['content'], 0, 255));
+                    $review->setProduit($product);
+                    $entityManager->persist($review);
+                    $entityManager->flush();
+                    $j++;
+                }
+            $i++;
+        }
+
+        $Listeproducts = $produitRepository->findAll();
         return $this->render('produit/index.html.twig', [
-            'listeProduits' => $data
+            'listeProduits' => $Listeproducts
         ]);
     }
 
 
     #[Route('/produit/{id}', name: 'show_produit', methods: ['GET'])]
-    public function showProduit(Produit $produit)
+    public function showProduit(ProduitRepository $produitRepository,$id)
     {
-        // dd($produit);
-        $reviews = $produit->getReviews();
-
+        $produit = $produitRepository->findBy(['id' => $id]);
         return $this->render('produit/show.html.twig', [
-            'produit' => $produit,
-            'reviews' => $reviews,
+            'produit' => $produit[0]
         ]);
     }
 }

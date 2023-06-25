@@ -1,101 +1,120 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{asset('node_modules/bootstrap/dist/css/bootstrap.css')}}">
-    <title>Formation</title>
-  </head>
-  <body>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="{{asset('node_modules/bootstrap/dist/css/bootstrap.css')}}">
+		<title>Liste des produits</title>
+	</head>
+	<body>
 
-    <section class="content">
-        <div class="container container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <h2 class="card-header">Liste des Produits</h2>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-6">
-                                    <form action="{{ path('List_Produit') }}" method="GET">
-                                        <div class="input-group mb-3">
-                                            <input type="text" class="form-control" placeholder="Rechercher par nom" name="search" value="{{ app.request.query.get('search') }}">
-                                            <button class="btn btn-outline-primary" type="submit">Rechercher</button>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div class="col-6">
-                                    <form action="{{ path('List_Produit') }}" method="GET">
-                                        <div class="input-group mb-3">
-                                            <input type="number" class="form-control" placeholder="Filtrer par prix maximum" name="max_price" value="{{ app.request.query.get('max_price') }}">
-                                            <button class="btn btn-outline-primary" type="submit">Filtrer</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <div class="row">
-                                {% for produit in listeProduits %}
-                                <div class="col-3" style="margin:35px">
-                                    <div class="card" onclick="location.href='{{ path('show_produit', {'id': produit.id}) }}';" style="width: 18rem; cursor: pointer;">
-                                        <h5 class="card-header">{{ produit.name }}</h5>
-                                        <img class="card-img-top" src="{{ produit.image }}" alt="Card image cap">
-                                        <div class="card-body">
-                                            <p class="card-text">Catégorie: {{ produit.category }}</p>
-                                        </div>
-                                        <h3 class="card-footer">Prix: {{ produit.price }}</h3>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <br>
-                            <div class="row">
-                                <div class="col-12">
-                                    <nav aria-label="Page navigation example">
-                                        <ul class="pagination justify-content-center">
+		<section class="content">
+			<div class="container container-fluid">
+				<div class="row">
+					<div class="col-12">
+						<div class="card">
+							<h2 class="card-header">Liste des Produits</h2>
+							<div class="card-body">
+								<div class="row">
+									<div class="col-6">
+										<form action="{{ path('List_Produit') }}" method="GET">
+											<div class="input-group mb-3">
+												<input type="text" class="form-control" placeholder="Rechercher par nom" name="search" value="{{ app.request.query.get('search') }}">
+												<button class="btn btn-outline-primary" type="submit">Rechercher</button>
+											</div>
+										</form>
+									</div>
+									<div class="col-6">
+										<form action="{{ path('List_Produit') }}" method="GET">
+											<div class="input-group mb-3">
+												<input type="number" class="form-control" placeholder="Filtrer par prix maximum" name="max_price" value="{{ app.request.query.get('max_price') }}">
+												<button class="btn btn-outline-primary" type="submit">Filtrer</button>
+											</div>
+										</form>
+									</div>
+								</div>
+								<div class="row">
+									{% for produit in listeProduits %}
+										<div class="col-3" style="margin:35px">
+											<div class="card" onclick="location.href='{{ path('show_produit', {'id': produit.id}) }}';" style="width: 18rem; cursor: pointer;">
+												<h5 class="card-header">{{ produit.name }}</h5>
+												<img class="card-img-top" src="{{ produit.image }}" alt="Card image cap">
+												<div class="card-body">
+													<p class="card-text">Catégorie:
+														{{ produit.category }}</p>
+												</div>
+												<h3 class="card-footer">Prix:
+													{{ produit.price }}</h3>
+											</div>
+										</div>
+									{% endfor %}
+								</div>
+								<br>
+								<div class="row">
+									<div class="col-12">
+										{% if totalPages > 1 %}
+											<nav aria-label="Page navigation example">
+												<ul class="pagination justify-content-center">
+													{% if currentPage != 1 %}
+														<li class="page-item">
+															<a class="page-link" href="{{ path('List_Produit', {'page': 1}) }}">Première page</a>
+														</li>
+														<li class="page-item">
+															<a class="page-link" href="{{ path('List_Produit', {'page': currentPage - 1}) }}">Page précédente</a>
+														</li>
+													{% endif %}
 
-                                            {% if currentPage != 1 %}
-                                            <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': 1}) }}">Première page</a></li>
-                                            <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': currentPage - 1}) }}">Page précédente</a></li>
-                                            {% endif %}
+													{% set startPage = currentPage > 3 ? currentPage - 2 : 1 %}
+													{% set endPage = startPage + 4 %}
 
-                                            {% set startPage = currentPage > 3 ? currentPage - 2 : 1 %}
-                                            {% set endPage = startPage + 4 %}
+													{% if endPage > totalPages %}
+														{% set startPage = totalPages - 4 %}
+														{% set endPage = totalPages %}
+													{% endif %}
 
-                                            {% if endPage > totalPages %}
-                                                {% set startPage = totalPages - 4 %}
-                                                {% set endPage = totalPages %}
-                                            {% endif %}
+													{% if startPage > 1 %}
+														<li class="page-item disabled">
+															<a class="page-link" href="#">...</a>
+														</li>
+													{% endif %}
 
-                                            {% if startPage > 1 %}
-                                            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
-                                            {% endif %}
+													{% for page in startPage..endPage %}
+														{% if page == currentPage %}
+															<li class="page-item active">
+																<a class="page-link" href="#">{{ page }}</a>
+															</li>
+														{% else %}
+															<li class="page-item">
+																<a class="page-link" href="{{ path('List_Produit', {'page': page}) }}">{{ page }}</a>
+															</li>
+														{% endif %}
+													{% endfor %}
 
-                                            {% for page in startPage..endPage %}
-                                                {% if page == currentPage %}
-                                                <li class="page-item active"><a class="page-link" href="#">{{ page }}</a></li>
-                                                {% else %}
-                                                <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': page}) }}">{{ page }}</a></li>
-                                                {% endif %}
-                                            {% endfor %}
+													{% if endPage < totalPages %}
+														<li class="page-item disabled">
+															<a class="page-link" href="#">...</a>
+														</li>
+													{% endif %}
 
-                                            {% if endPage < totalPages %}
-                                            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
-                                            {% endif %}
+													{% if currentPage != totalPages %}
+														<li class="page-item">
+															<a class="page-link" href="{{ path('List_Produit', {'page': currentPage + 1}) }}">Page suivante</a>
+														</li>
+														<li class="page-item">
+															<a class="page-link" href="{{ path('List_Produit', {'page': totalPages}) }}">Dernière page</a>
+														</li>
+													{% endif %}
+												</ul>
+											</nav>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 
-                                            {% if currentPage != totalPages %}
-                                            <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': currentPage + 1}) }}">Page suivante</a></li>
-                                            <li class="page-item"><a class="page-link" href="{{ path('List_Produit', {'page': totalPages}) }}">Dernière page</a></li>
-                                            {% endif %}
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-  </body>
+	</body>
 </html>

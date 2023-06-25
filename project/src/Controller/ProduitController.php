@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Produit;
-use App\Entity\Reviews;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -15,14 +13,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProduitController extends AbstractController
 {
-    private $client;
 
     public function __construct(SymfonyHttpClientInterface $client)
     {
         $this->client = $client;
     }
 
-    #[Route('/produit', name: 'List_Produit')]
+    #[Route('/', name: 'List_Produit')]
     public function index(Request $request, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
@@ -45,7 +42,7 @@ class ProduitController extends AbstractController
         $paginator = new Paginator($query);
 
         $page = $request->query->getInt('page', 1);
-        $limit = 10;
+        $limit = 9;
         $offset = ($page - 1) * $limit;
 
         $paginator->getQuery()

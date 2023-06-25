@@ -20,8 +20,9 @@ class ProduitController extends AbstractController
     {
         $this->client = $client;
     }
+    
     #[Route('/produit', name: 'List_Produit')]
-    public function index(ProduitRepository $produitRepository,EntityManagerInterface $entityManager): Response
+    public function index(Request $request, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
     {
         $res = $this->client->request(
             'GET',
@@ -29,10 +30,9 @@ class ProduitController extends AbstractController
         );
 
         $data = json_decode($res->getContent(), true);
-         $i=0;
-        foreach($data['products'] as $result)
-        {
-            $prod =$data['products'];
+        $i = 0;
+        foreach ($data['products'] as $result) {
+            $prod = $data['products'];
             $product = new Produit();
             $product->setName($prod[$i]['productName']);
             $product->setPrice($prod[$i]['price']);
@@ -41,30 +41,38 @@ class ProduitController extends AbstractController
             $entityManager->persist($product);
             $entityManager->flush();
 
-                $j=0;
-                foreach($prod[$i]['reviews']as $res)
-                {
-                    $rev =$prod[$i]['reviews'];
-                    $review = new Reviews();
-                    $review->setNote($rev[$j]['value']);
-                    $review->setCommentaire(substr($rev[$j]['content'], 0, 255));
-                    $review->setProduit($product);
-                    $entityManager->persist($review);
-                    $entityManager->flush();
-                    $j++;
-                }
+            $j = 0;
+            foreach ($prod[$i]['reviews'] as $res) {
+                $rev = $prod[$i]['reviews'];
+                $review = new Reviews();
+                $review->setNote($rev[$j]['value']);
+                $review->setCommentaire(substr($rev[$j]['content'], 0, 255));
+                $review->setProduit($product);
+                $entityManager->persist($review);
+                $entityManager->flush();
+                $j++;
+            }
             $i++;
         }
 
-        $Listeproducts = $produitRepository->findAll();
+        $page = $request->query->getInt('page', 1);
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $paginator = $produitRepository->getPaginatedProducts($limit, $offset);
+        $totalProducts = $produitRepository->count([]);
+        $totalPages = ceil($totalProducts / $limit);
+
         return $this->render('produit/index.html.twig', [
-            'listeProduits' => $Listeproducts
+            'listeProduits' => $paginator,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
         ]);
     }
 
 
     #[Route('/produit/{id}', name: 'show_produit', methods: ['GET'])]
-    public function showProduit(ProduitRepository $produitRepository,$id)
+    public function showProduit(ProduitRepository $produitRepository, $id)
     {
         $produit = $produitRepository->findBy(['id' => $id]);
         return $this->render('produit/show.html.twig', [

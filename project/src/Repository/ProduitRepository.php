@@ -20,7 +20,14 @@ class ProduitRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Produit::class);
     }
-
+    public function getPaginatedProducts($limit, $offset)
+    {
+        return $this->createQueryBuilder('p')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
+    }
     public function save(Produit $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

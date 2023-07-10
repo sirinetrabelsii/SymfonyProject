@@ -8,11 +8,6 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Produit>
- *
- * @method Produit|null find($id, $lockMode = null, $lockVersion = null)
- * @method Produit|null findOneBy(array $criteria, array $orderBy = null)
- * @method Produit[]    findAll()
- * @method Produit[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ProduitRepository extends ServiceEntityRepository
 {
@@ -20,29 +15,53 @@ class ProduitRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Produit::class);
     }
-    public function getPaginatedProducts($limit, $offset)
+
+    public function getPaginatedProducts($limit, $offset, $search = null, $maxPrice = null)
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+
+        if ($search) {
+            $queryBuilder->andWhere('p.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($maxPrice) {
+            $queryBuilder->andWhere('p.price <= :max_price')
+                ->setParameter('max_price', $maxPrice);
+        }
+
+        $queryBuilder->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function countProducts($search = null, $maxPrice = null)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
+
+        if ($search) {
+            $queryBuilder->andWhere('p.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($maxPrice) {
+            $queryBuilder->andWhere('p.price <= :max_price')
+                ->setParameter('max_price', $maxPrice);
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    public function findOneWithReviews($id)
     {
         return $this->createQueryBuilder('p')
-            ->setMaxResults($limit)
-            ->setFirstResult($offset)
+            ->leftJoin('p.reviews', 'r')
+            ->addSelect('r')
+            ->andWhere('p.id = :id')
+            ->setParameter('id', $id)
             ->getQuery()
-            ->getResult();
-    }
-    public function save(Produit $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    public function remove(Produit $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+            ->getOneOrNullResult();
     }
 }

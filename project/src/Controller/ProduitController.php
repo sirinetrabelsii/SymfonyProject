@@ -59,34 +59,13 @@ class ProduitController extends AbstractController
         $search = $request->query->get('search');
         $maxPrice = $request->query->get('max_price');
 
-        $queryBuilder = $produitRepository->createQueryBuilder('p');
-
-        if ($search) {
-            $queryBuilder->andWhere('p.name LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
-        }
-
-        if ($maxPrice) {
-            $queryBuilder->andWhere('p.price <= :max_price')
-                ->setParameter('max_price', $maxPrice);
-        }
-
-        $query = $queryBuilder->getQuery();
-
-        $paginator = new Paginator($query);
-
-        $page = $request->query->getInt('page', 1);
         $limit = 9;
+        $page = $request->query->getInt('page', 1);
         $offset = ($page - 1) * $limit;
 
-        $paginator->getQuery()
-            ->setFirstResult($offset)
-            ->setMaxResults($limit);
-
-        $totalProducts = $paginator->count();
+        $listeProduits = $produitRepository->getPaginatedProducts($limit, $offset, $search, $maxPrice);
+        $totalProducts = $produitRepository->countProducts($search, $maxPrice);
         $totalPages = ceil($totalProducts / $limit);
-
-        $listeProduits = $paginator->getIterator();
 
         return $this->render('produit/index.html.twig', [
             'listeProduits' => $listeProduits,
@@ -98,9 +77,9 @@ class ProduitController extends AbstractController
     #[Route('/produit/{id}', name: 'show_produit', methods: ['GET'])]
     public function showProduit(ProduitRepository $produitRepository, $id)
     {
-        $produit = $produitRepository->findBy(['id' => $id]);
+        $produit = $produitRepository->findOneWithReviews($id);
         return $this->render('produit/show.html.twig', [
-            'produit' => $produit[0]
+            'produit' => $produit
         ]);
     }
 }
